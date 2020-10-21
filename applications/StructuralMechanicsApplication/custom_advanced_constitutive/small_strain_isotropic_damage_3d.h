@@ -7,16 +7,10 @@
 //					 license: structural_mechanics_application/license.txt
 //
 //  Main authors:    Marcelo Raschi
-//  Collaborator:
 
 #if !defined(KRATOS_SMALL_STRAIN_ISOTROPIC_DAMAGE_3D_LAW_H_INCLUDED)
 #define KRATOS_SMALL_STRAIN_ISOTROPIC_DAMAGE_3D_LAW_H_INCLUDED
 
-// System includes
-
-// External includes
-
-// Project includes
 #include "custom_constitutive/elastic_isotropic_3d.h"
 
 namespace Kratos
@@ -56,7 +50,6 @@ namespace Kratos
  */
 class KRATOS_API(STRUCTURAL_MECHANICS_APPLICATION) SmallStrainIsotropicDamage3D
     : public ElasticIsotropic3D
-
 {
 public:
 
@@ -66,7 +59,7 @@ public:
     typedef ConstitutiveLaw BaseType;
     typedef std::size_t SizeType;
 
-    // Counted pointer of LinearIsotropicDamage3DLaw
+    // Counted pointer
     KRATOS_CLASS_POINTER_DEFINITION(SmallStrainIsotropicDamage3D);
 
     ///@}
@@ -79,12 +72,12 @@ public:
     SmallStrainIsotropicDamage3D();
 
     /**
-     * @brief Default constructor.
+     * @brief Copy constructor.
      */
     SmallStrainIsotropicDamage3D(const SmallStrainIsotropicDamage3D& rOther);
 
     /**
-     * @brief Default constructor.
+     * @brief Destructor.
      */
     ~SmallStrainIsotropicDamage3D() override;
 
@@ -133,10 +126,10 @@ public:
         Vector& rValue
         ) override;
 
-     /**
-     * @brief Returns the value of a specified variable (Vector)
-     * @param rThisVariable the variable requested
-     * @param rValue new value of the specified variable
+    /**
+     * @brief Sets the value of a specified variable (Vector)
+     * @param rThisVariable The variable to be returned
+     * @param rValue New value of the specified variable
      * @param rCurrentProcessInfo the process info
      */
     void SetValue(
@@ -157,11 +150,11 @@ public:
                             const Vector& rShapeFunctionsValues) override;
 
     /**
-     * @brief Computes the material response in terms of 2nd Piola-Kirchhoff stresses and constitutive tensor
+     * @brief Computes the material response in terms of Cauchy stresses and constitutive tensor
      * @param rValues The specific parameters of the current constitutive law
      * @see Parameters
      */
-    void CalculateMaterialResponsePK2(Parameters& rValues) override;
+    void CalculateMaterialResponseCauchy(Parameters& rValues) override;
 
     /**
      * @brief Indicates if this CL requires initialization of the material response,
@@ -171,13 +164,6 @@ public:
     {
         return false;
     }
-
-    /**
-     * @brief Initialize the material response in terms of Cauchy stresses
-     * @param rValues The specific parameters of the current constitutive law
-     * @see Parameters
-     */
-    void InitializeMaterialResponseCauchy(ConstitutiveLaw::Parameters& rValues) override;
 
     /**
      * @brief Indicates if this CL requires finalization step the material
@@ -197,7 +183,7 @@ public:
     void FinalizeMaterialResponseCauchy(Parameters& rValues) override;
 
     /**
-     * @brief calculates the value of a specified variable
+     * @brief calculates the value of a specified variable (double)
      * @param rValues the needed parameters for the CL calculation
      * @param rThisVariable the variable to be returned
      * @param rValue a reference to the returned value
@@ -236,9 +222,10 @@ public:
     /**
      * @brief This method computes the stress and constitutive tensor
      * @param rValues The norm of the deviation stress
-     * @param rStrainVariable
+     * @param rInternalVariables
      */
-    void CalculateStressResponse(ConstitutiveLaw::Parameters& rValues, Vector& rInternalVariables) override;
+    void CalculateStressResponse(ConstitutiveLaw::Parameters& rValues,
+		    Vector& rInternalVariables) override;
 
 protected:
 
@@ -322,6 +309,6 @@ private:
 
     void load(Serializer& rSerializer) override;
 
-}; // class LinearIsotropicDamage3DLaw
+}; // class SmallStrainIsotropicDamage3D
 } // namespace Kratos
 #endif
