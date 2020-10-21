@@ -56,12 +56,65 @@ SmallStrainJ2PlasticityPlaneStrain2D::~SmallStrainJ2PlasticityPlaneStrain2D()
 //************************************************************************************
 //************************************************************************************
 
+Vector& SmallStrainJ2PlasticityPlaneStrain2D::GetValue(
+    const Variable<Vector>& rThisVariable,
+    Vector& rValue
+    )
+{
+    if(rThisVariable == INTERNAL_VARIABLES){
+        rValue.resize(5);
+        rValue[0] = mAccumulatedPlasticStrain;
+        rValue[1] = mPlasticStrain[0];
+        rValue[2] = mPlasticStrain[1];
+        rValue[3] = mPlasticStrain[2];
+        rValue[4] = mPlasticStrain[3];
+    }
+
+    return rValue;
+}
+
+//************************************************************************************
+//************************************************************************************
+
+void SmallStrainJ2PlasticityPlaneStrain2D::SetValue(
+    const Variable<Vector>& rThisVariable,
+    const Vector& rValue,
+    const ProcessInfo& rProcessInfo
+    )
+{
+    if(rThisVariable == INTERNAL_VARIABLES){
+        mAccumulatedPlasticStrain = rValue[0];
+        mPlasticStrain[0] = rValue[1];
+        mPlasticStrain[1] = rValue[2];
+        mPlasticStrain[2] = rValue[3];
+        mPlasticStrain[3] = rValue[4];
+    }
+}
+
+//************************************************************************************
+//************************************************************************************
+
+void SmallStrainJ2PlasticityPlaneStrain2D::FinalizeMaterialResponseCauchy(
+    Parameters& rValues)
+{
+    Vector internal_variables(5);
+    this->CalculateStressResponse(rValues, internal_variables);
+    mAccumulatedPlasticStrain = internal_variables[0];
+    mPlasticStrain[0] = internal_variables[1];
+    mPlasticStrain[1] = internal_variables[2];
+    mPlasticStrain[2] = internal_variables[3];
+    mPlasticStrain[3] = internal_variables[4];
+}
+
+//************************************************************************************
+//************************************************************************************
+
 void SmallStrainJ2PlasticityPlaneStrain2D::CalculateStressResponse(
         ConstitutiveLaw::Parameters& rValues,
-        Vector& rPlasticStrain,
-        double& rAccumulatedPlasticStrain)
+        Vector& rInternalVariables)
 {
-    rPlasticStrain.resize(4, false);
+    Vector plastic_strain = mPlasticStrain;
+    double accumulated_plastic_strain = mAccumulatedPlasticStrain;
     const Properties& r_material_properties = rValues.GetMaterialProperties();
     Flags& r_constitutive_law_options = rValues.GetOptions();
     Vector& r_strain_vector = rValues.GetStrainVector();
@@ -87,8 +140,8 @@ void SmallStrainJ2PlasticityPlaneStrain2D::CalculateStressResponse(
         const double sqrt_two_thirds = std::sqrt(2. / 3.); // = 0.8164965809277260
         double trial_yield_function;
 
-        rPlasticStrain = mPlasticStrain;
-        rAccumulatedPlasticStrain = mAccumulatedPlasticStrain;
+        //rPlasticStrain = mPlasticStrain;
+        //rAccumulatedPlasticStrain = mAccumulatedPlasticStrain;
 
         Matrix elastic_tensor;
         elastic_tensor.resize(4, 4, false);
@@ -145,19 +198,24 @@ void SmallStrainJ2PlasticityPlaneStrain2D::CalculateStressResponse(
                         stress_trial_dev(3) - 2. * mu * dgamma * yield_function_normal_vector(3);
                 }
 
-            rPlasticStrain(0) += dgamma * yield_function_normal_vector(0);
-            rPlasticStrain(1) += dgamma * yield_function_normal_vector(1);
-            rPlasticStrain(2) += dgamma * yield_function_normal_vector(2);
-            rPlasticStrain(3) += dgamma * yield_function_normal_vector(3) * 2;
-            rAccumulatedPlasticStrain += sqrt_two_thirds * dgamma;
+            plastic_strain(0) += dgamma * yield_function_normal_vector(0);
+            plastic_strain(1) += dgamma * yield_function_normal_vector(1);
+            plastic_strain(2) += dgamma * yield_function_normal_vector(2);
+            plastic_strain(3) += dgamma * yield_function_normal_vector(3) * 2;
+            accumulated_plastic_strain += sqrt_two_thirds * dgamma;
 
             // We update the tangent tensor
             if( r_constitutive_law_options.Is( ConstitutiveLaw::COMPUTE_CONSTITUTIVE_TENSOR ) ) {
                 CalculateTangentMatrix(dgamma, norm_dev_stress, yield_function_normal_vector,
-                                       r_material_properties, rAccumulatedPlasticStrain, tangent_tensor);
+                                       r_material_properties, accumulated_plastic_strain, tangent_tensor);
             }
         }
     }
+    rInternalVariables[0] = accumulated_plastic_strain;
+    rInternalVariables[1] = plastic_strain[0];
+    rInternalVariables[2] = plastic_strain[1];
+    rInternalVariables[3] = plastic_strain[2];
+    rInternalVariables[4] = plastic_strain[3];
 }
 
 //************************************************************************************

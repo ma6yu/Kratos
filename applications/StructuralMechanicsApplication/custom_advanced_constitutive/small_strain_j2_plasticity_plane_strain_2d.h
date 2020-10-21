@@ -100,6 +100,30 @@ public:
      */
     ConstitutiveLaw::Pointer Clone() const override;
 
+    /**
+     * @brief Sets the value of a specified variable (double)
+     * @param rThisVariable The variable to be returned
+     * @param rValue New value of the specified variable
+     * @param rCurrentProcessInfo the process info
+     */
+    void SetValue(
+        const Variable<Vector>& rThisVariable,
+        const Vector& rValue,
+        const ProcessInfo& rProcessInfo
+        ) override;
+
+    /**
+     * @brief Returns the value of a specified variable (double)
+     * @param rThisVariable the variable to be returned
+     * @param rValue a reference to the returned value
+     * @return rValue output: the value of the specified variable
+     */
+    Vector& GetValue(
+        const Variable<Vector>& rThisVariable,
+        Vector& rValue
+        ) override;
+
+
     ///@}
     ///@name Operators
     ///@{
@@ -139,7 +163,7 @@ public:
 
     /// Print object's data.
     void PrintData(std::ostream& rOStream) const override {
-        rOStream << "Linear J2 Plasticity Plane Strain 2D constitutive law\n";
+        rOStream << "Small strain J2 Plasticity Plane Strain 2D constitutive law\n";
     };
 
 protected:
@@ -160,6 +184,13 @@ protected:
     ///@{
 
     /**
+     * @brief Finalize the material response in terms of Cauchy stresses
+     * @param rValues The specific parameters of the current constitutive law
+     * @see Parameters
+     */
+    void FinalizeMaterialResponseCauchy(ConstitutiveLaw::Parameters& rValues) override;
+
+    /**
      * @brief This method computes the stress and constitutive tensor
      * @param rValues The norm of the deviation stress
      * @param rPlasticStrain
@@ -167,8 +198,7 @@ protected:
      */
     void CalculateStressResponse(
             ConstitutiveLaw::Parameters& rValues,
-            Vector& rPlasticStrain,
-            double& rAccumulatedPlasticStrain
+            Vector& rInternalVariables
             ) override;
 
     /**
@@ -183,13 +213,6 @@ protected:
                                 const Vector &YieldFunctionNormalVector,
                                 const Properties &rMaterialProperties,
                                 const double AccumulatedPlasticStrain, Matrix &rElasticityTensor) override;
-
-    /**
-     * @brief This method computes the elastic tensor
-     * @param rElasticityTensor The elastic tensor/matrix to be computed
-     * @param rMaterialProperties The properties of the material
-     */
-    void CalculateElasticMatrix(const Properties &rMaterialProperties, Matrix &rElasticityTensor) override;
 
     ///@}
     ///@name Protected  Access
@@ -228,6 +251,13 @@ private:
     ///@}
     ///@name Serialization
     ///@{
+    /**
+     * @brief This method computes the elastic tensor
+     * @param rElasticityTensor The elastic tensor/matrix to be computed
+     * @param rMaterialProperties The properties of the material
+     */
+    void CalculateElasticMatrix(const Properties &rMaterialProperties, Matrix &rElasticityTensor) ;
+
 
     friend class Serializer;
 
