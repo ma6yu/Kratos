@@ -137,7 +137,7 @@ KRATOS_TEST_CASE_IN_SUITE(_ConstitutiveLaw_SmallStrainIsotropicDamage3D, KratosS
     dvr[0]=1.327988e-01; dvr[1]=5.663994e-01; dvr[2]=7.649198e-01; dvr[3]=7.649198e-01;
 
 
-    // Here we must simulate the call sequence of the element
+    // Simulate the call sequence of the element
     Vector dummy;
     cl.InitializeMaterial(material_properties, geometry, dummy);
     for (std::size_t t = 0; t < nr_ts; ++t){
