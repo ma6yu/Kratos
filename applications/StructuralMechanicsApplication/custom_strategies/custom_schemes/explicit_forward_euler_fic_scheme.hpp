@@ -628,6 +628,7 @@ public:
         array_1d<double, 3>& r_current_impulse = itCurrentNode->FastGetSolutionStepValue(NODAL_DISPLACEMENT_STIFFNESS);
         // const array_1d<double, 3>& r_current_velocity = itCurrentNode->FastGetSolutionStepValue(VELOCITY);
         const array_1d<double, 3>& r_external_forces = itCurrentNode->FastGetSolutionStepValue(FORCE_RESIDUAL);
+        const array_1d<double, 3>& r_previous_external_forces = itCurrentNode->FastGetSolutionStepValue(FORCE_RESIDUAL,1);
         const array_1d<double, 3>& r_current_internal_force = itCurrentNode->FastGetSolutionStepValue(NODAL_INERTIA);
         const array_1d<double, 3>& r_previous_internal_force = itCurrentNode->FastGetSolutionStepValue(NODAL_INERTIA,1);
         // const array_1d<double, 3>& r_nodal_stiffness = itCurrentNode->GetValue(NODAL_DIAGONAL_STIFFNESS);
@@ -638,7 +639,7 @@ public:
 
         // Solution of the explicit equation:
         for (IndexType j = 0; j < DomainSize; j++) {
-            r_current_impulse[j] += mDeltaTime*r_external_forces[j] - mDeltaTime*mTheta1*r_current_internal_force[j]
+            r_current_impulse[j] += mDeltaTime*0.5*(r_previous_external_forces[j]+r_external_forces[j]) - mDeltaTime*mTheta1*r_current_internal_force[j]
                                     - mDeltaTime*(1.0-mTheta1)*r_previous_internal_force[j];
         }
     }
