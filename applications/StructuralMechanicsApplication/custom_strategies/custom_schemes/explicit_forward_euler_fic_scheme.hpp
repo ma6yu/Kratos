@@ -656,12 +656,13 @@ public:
             fix_displacements[2] = (itCurrentNode->GetDof(DISPLACEMENT_Z, DisplacementPosition + 2).IsFixed());
 
         // Solution of the explicit equation:
-        if ( (nodal_mass*(1.0+mDeltaTime*(mAlpha+mBeta*mGamma))) > numerical_limit ){
+        if ( (nodal_mass*(1.0+mDeltaTime*mAlpha*mTheta2)) > numerical_limit ){
             for (IndexType j = 0; j < DomainSize; j++) {
                 if (fix_displacements[j] == false) {
-                    r_current_displacement[j] = (mDeltaTime*(mTheta1*r_current_impulse[j]+(1.0-mTheta1)*r_previous_impulse[j]) + (1.0+mDeltaTime*mBeta*mGamma)*nodal_mass*r_current_displacement[j]
+                    r_current_displacement[j] = (mDeltaTime*(mTheta1*r_current_impulse[j]+(1.0-mTheta1)*r_previous_impulse[j])
+                                                + (1.0-mDeltaTime*mAlpha*(1.0-mTheta2))*nodal_mass*r_current_displacement[j]
                                                 - mDeltaTime*mBeta*r_current_internal_force[j]) /
-                                                (nodal_mass*(1.0+mDeltaTime*(mAlpha+mBeta*mGamma)));
+                                                (nodal_mass*(1.0+mDeltaTime*mAlpha*mTheta2));
                 }
             }
         } else{
