@@ -83,12 +83,12 @@ class Algorithm():
                             mixed_mp
                             )
 
-        structures_nodal_results = ["VOLUME_ACCELERATION","DEM_SURFACE_LOAD","REACTION","TARGET_STRESS","REACTION_STRESS","LOADING_VELOCITY"]
-        dem_nodal_results = ["VELOCITY","RIGID_ELEMENT_FORCE"] # ["IS_STICKY", "DEM_STRESS_TENSOR"]
+        structures_nodal_results = ["REACTION","ACCELERATION","DEM_SURFACE_LOAD"]
+        dem_nodal_results = ["RIGID_ELEMENT_FORCE"] # ["IS_STICKY", "DEM_STRESS_TENSOR"]
         clusters_nodal_results = []
         rigid_faces_nodal_results = []
         contact_model_part_results = ["CONTACT_FAILURE"]
-        mixed_nodal_results = ["DISPLACEMENT"]
+        mixed_nodal_results = ["DISPLACEMENT","VELOCITY"]
         gauss_points_results = ["CAUCHY_STRESS_TENSOR"]
         self.gid_output.initialize_dem_fem_results(structures_nodal_results,
                                                    dem_nodal_results,
