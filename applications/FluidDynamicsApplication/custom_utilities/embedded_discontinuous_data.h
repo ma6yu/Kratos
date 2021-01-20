@@ -112,7 +112,7 @@ void InitializeBoundaryConditionData(const ProcessInfo& rProcessInfo)
 {
     this->FillFromProcessInfo(SlipLength, SLIP_LENGTH, rProcessInfo);
     this->FillFromProcessInfo(PenaltyCoefficient, PENALTY_COEFFICIENT, rProcessInfo);
-    this->FillFromProcessInfo(EdgeGradientPenaltyConstant, EDGE_GRADIENT_PENALTY_CONSTANT, rProcessInfo);
+    this->FillFromProcessInfo(EdgeGradientPenaltyConstant, INCISED_EDGE_PENALTY_COEFFICIENT, rProcessInfo);
 }
 
 /**
