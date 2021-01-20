@@ -47,7 +47,7 @@ constexpr static unsigned int NumEdges = (TFluidData::NumNodes == 3) ? 3 : 6;
 
 double SlipLength;
 double PenaltyCoefficient;
-double EdgeGradientPenaltyConstant;
+double IncisedEdgePenaltyCoefficient;
 
 Vector ElementalEdgeDistances;
 NodalScalarData ElementalDistances;
@@ -112,7 +112,7 @@ void InitializeBoundaryConditionData(const ProcessInfo& rProcessInfo)
 {
     this->FillFromProcessInfo(SlipLength, SLIP_LENGTH, rProcessInfo);
     this->FillFromProcessInfo(PenaltyCoefficient, PENALTY_COEFFICIENT, rProcessInfo);
-    this->FillFromProcessInfo(EdgeGradientPenaltyConstant, EDGE_GRADIENT_PENALTY_CONSTANT, rProcessInfo);
+    this->FillFromProcessInfo(IncisedEdgePenaltyCoefficient, INCISED_EDGE_PENALTY_COEFFICIENT, rProcessInfo);
 }
 
 /**
