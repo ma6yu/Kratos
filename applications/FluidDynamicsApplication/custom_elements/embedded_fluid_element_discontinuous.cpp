@@ -182,6 +182,7 @@ void EmbeddedFluidElementDiscontinuous<TBaseElement>::CalculateLocalSystem(
         AddTangentialSymmetricCounterpartContribution(rLeftHandSideMatrix, rRightHandSideVector, data); // NOTE: IMPLEMENT THE SKEW-SYMMETRIC ADJOINT IF IT IS NEEDED IN THE FUTURE. CREATE A IS_SKEW_SYMMETRIC ELEMENTAL FLAG.
     } else if ( data.IsIncised() ) {
         // Add the MultiFreedom Constraint in the incised edges to avoid the conformity problems
+        data.InitializeIncisedEdgesData(rCurrentProcessInfo);
         AddIncisedEdgeGradientPenalization(rLeftHandSideMatrix, rRightHandSideVector, data);
         // AddIncisedElementGradientPenalization(rLeftHandSideMatrix, rRightHandSideVector, data);
         // AddIncisedElementProjectedGradientPenalization(rLeftHandSideMatrix, rRightHandSideVector, data);
@@ -883,6 +884,24 @@ void EmbeddedFluidElementDiscontinuous<TBaseElement>::AddIncisedEdgeGradientPena
     // const double constraint_penalty = std::pow(10, max_lhs_order);
     // const double constraint_penalty = std::pow(10, max_lhs_order + 4);*/
     const double constraint_penalty = rData.IncisedEdgePenaltyCoefficient;
+
+    // // Set the constraint matrix (only VELOCITY)
+    // Matrix A = ZeroMatrix(BlockSize * rData.NumIntersectedEdges, LocalSize);
+    // for (unsigned int i_edge = 0; i_edge < rData.NumIntersectedEdges; ++i_edge) {
+    //     // Get edge data
+    //     const std::size_t edge_id = rData.IntersectedEdges[i_edge];
+    //     const auto& r_edge_local_ids = edges_local_ids[edge_id];
+    //     const std::size_t node_0_loc_id = r_edge_local_ids[0];
+    //     const std::size_t node_1_loc_id = r_edge_local_ids[1];
+    //     // Add the current edge contraint matrix contribution
+    //     for (std::size_t k = 0; k < Dim; ++k) {
+    //         std::size_t row = i_edge * BlockSize + k;
+    //         std::size_t col_0 = node_0_loc_id * BlockSize + k;
+    //         std::size_t col_1 = node_1_loc_id * BlockSize + k;
+    //         A(row, col_0) = constraint_penalty;
+    //         A(row, col_1) = -constraint_penalty;
+    //     }
+    // }
 
     // Set the constraint matrix
     Matrix A = ZeroMatrix(BlockSize * rData.NumIntersectedEdges, LocalSize);
