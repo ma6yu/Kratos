@@ -638,7 +638,7 @@ public:
 // KRATOS_WATCH(r_actual_previous_displacement)
 
         const array_1d<double, 3>& r_external_forces = itCurrentNode->FastGetSolutionStepValue(FORCE_RESIDUAL);
-        const array_1d<double, 3>& r_previous_external_forces = itCurrentNode->FastGetSolutionStepValue(FORCE_RESIDUAL,1);
+        // const array_1d<double, 3>& r_previous_external_forces = itCurrentNode->FastGetSolutionStepValue(FORCE_RESIDUAL,1);
         // const array_1d<double, 3>& r_actual_previous_external_forces = itCurrentNode->FastGetSolutionStepValue(FORCE_RESIDUAL,2);
         const array_1d<double, 3>& r_current_internal_force = itCurrentNode->FastGetSolutionStepValue(NODAL_INERTIA);
         const array_1d<double, 3>& r_previous_internal_force = itCurrentNode->FastGetSolutionStepValue(NODAL_INERTIA,1);
@@ -661,12 +661,26 @@ public:
         if ( (nodal_mass*(1.0+mAlpha*mTheta2*mDeltaTime)) > numerical_limit ){
             for (IndexType j = 0; j < DomainSize; j++) {
                 if (fix_displacements[j] == false) {
-                    r_current_displacement[j] = ( (2.0-mDeltaTime*mAlpha*(1.0-2.0*mTheta2))*nodal_mass*r_current_displacement[j]
-                                                - (1.0-mDeltaTime*mAlpha*(1.0-mTheta2))*nodal_mass*r_actual_previous_displacement[j]
-                                                - mDeltaTime*(mBeta+mDeltaTime*mTheta1)*r_current_internal_force[j]
-                                                + mDeltaTime*(mBeta-mDeltaTime*(1.0-mTheta1))*r_previous_internal_force[j]
-                                                + mDeltaTime*mDeltaTime*(mTheta1*r_external_forces[j]+(1.0-mTheta1)*r_previous_external_forces[j]) ) /
-                                                (nodal_mass*(1.0+mAlpha*mTheta2*mDeltaTime));
+                    // r_current_displacement[j] = ( (2.0-mDeltaTime*mAlpha*(1.0-2.0*mTheta2))*nodal_mass*r_current_displacement[j]
+                    //                             - (1.0-mDeltaTime*mAlpha*(1.0-mTheta2))*nodal_mass*r_actual_previous_displacement[j]
+                    //                             - mDeltaTime*(mBeta+mDeltaTime*mTheta1)*r_current_internal_force[j]
+                    //                             + mDeltaTime*(mBeta-mDeltaTime*(1.0-mTheta1))*r_previous_internal_force[j]
+                    //                             + mDeltaTime*mDeltaTime*(mTheta1*r_external_forces[j]+(1.0-mTheta1)*r_previous_external_forces[j]) ) /
+                    //                             (nodal_mass*(1.0+mAlpha*mTheta2*mDeltaTime));
+                    // For step load
+                    // r_current_displacement[j] = ( (2.0-mDeltaTime*mAlpha*(1.0-2.0*mTheta2))*nodal_mass*r_current_displacement[j]
+                    //                             - (1.0-mDeltaTime*mAlpha*(1.0-mTheta2))*nodal_mass*r_actual_previous_displacement[j]
+                    //                             - mDeltaTime*(mBeta+mDeltaTime*mTheta1)*r_current_internal_force[j]
+                    //                             + mDeltaTime*(mBeta-mDeltaTime*(1.0-mTheta1))*r_previous_internal_force[j]
+                    //                             + mDeltaTime*mDeltaTime*(mTheta1*r_external_forces[j]+(1.0-mTheta1)*r_external_forces[j]) ) /
+                    //                             (nodal_mass*(1.0+mAlpha*mTheta2*mDeltaTime));
+                    // Central Differences
+                    r_current_displacement[j] = ( (2.0+mDeltaTime*mAlpha)*nodal_mass*r_current_displacement[j]
+                                                - nodal_mass*r_actual_previous_displacement[j]
+                                                - mDeltaTime*(mBeta+mDeltaTime)*r_current_internal_force[j]
+                                                + mDeltaTime*mBeta*r_previous_internal_force[j]
+                                                + mDeltaTime*mDeltaTime*r_external_forces[j] ) /
+                                                (nodal_mass*(1.0+mAlpha*mDeltaTime));
                 }
             }
         } else{
