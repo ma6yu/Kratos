@@ -249,25 +249,46 @@ void GenericSmallStrainFemDemElement<TDim,TyieldSurf>::CalculateAll(
 
         const Vector& r_strain_vector = this_constitutive_variables.StrainVector;
         const Vector& r_stress_vector = this_constitutive_variables.StressVector;
-        const Vector& r_integrated_stress_vector = (1.0 - damage_element)*r_stress_vector;
+        // const Vector& r_integrated_stress_vector = (1.0 - damage_element)*r_stress_vector;
 
-        if (CalculateStiffnessMatrixFlag) { // Calculation of the matrix is required
-            // Contributions to stiffness matrix calculated on the reference config
-            if (is_damaging == true && norm_2(r_strain_vector) > tolerance) {
-                Matrix tangent_tensor;
-                if (rCurrentProcessInfo[TANGENT_CONSTITUTIVE_TENSOR] == 0) {
-                    tangent_tensor = this_constitutive_variables.D;
-                } else if (rCurrentProcessInfo[TANGENT_CONSTITUTIVE_TENSOR] == 1) {
-                    tangent_tensor = (1.0 - damage_element) * this_constitutive_variables.D;
-                } else if (rCurrentProcessInfo[TANGENT_CONSTITUTIVE_TENSOR] == 2) {
-                    this->CalculateTangentTensor(tangent_tensor, r_strain_vector, r_integrated_stress_vector, this_constitutive_variables.D, cl_values);
-                } else if (rCurrentProcessInfo[TANGENT_CONSTITUTIVE_TENSOR] == 3) {
-                    this->CalculateTangentTensorSecondOrder(tangent_tensor, r_strain_vector, r_integrated_stress_vector, this_constitutive_variables.D, cl_values);
-                }
-                this->CalculateAndAddKm(rLeftHandSideMatrix, this_kinematic_variables.B, tangent_tensor, int_to_reference_weight);
-            } else {
-                this->CalculateAndAddKm(rLeftHandSideMatrix, this_kinematic_variables.B, (1.0-damage_element)*this_constitutive_variables.D, int_to_reference_weight);
+
+
+// to remove!!!! paper Cervera 
+    auto& r_elem_neigb = this->GetValue(NEIGHBOUR_ELEMENTS);
+    KRATOS_ERROR_IF(r_elem_neigb.size() == 0) << " Neighbour Elements not calculated" << std::endl;
+    Vector average_strain = (r_strain_vector + r_elem_neigb[0].GetValue(STRAIN_VECTOR) + r_elem_neigb[1].GetValue(STRAIN_VECTOR) + r_elem_neigb[2].GetValue(STRAIN_VECTOR)) / 4.0;
+    const Vector& r_integrated_stress_vector = prod(this_constitutive_variables.D, r_strain_vector);
+
+
+
+    if (CalculateStiffnessMatrixFlag)
+    { // Calculation of the matrix is required
+        // Contributions to stiffness matrix calculated on the reference config
+        if (is_damaging == true && norm_2(r_strain_vector) > tolerance)
+        {
+            Matrix tangent_tensor;
+            if (rCurrentProcessInfo[TANGENT_CONSTITUTIVE_TENSOR] == 0)
+            {
+                tangent_tensor = this_constitutive_variables.D;
             }
+            else if (rCurrentProcessInfo[TANGENT_CONSTITUTIVE_TENSOR] == 1)
+            {
+                tangent_tensor = (1.0 - damage_element) * this_constitutive_variables.D;
+            }
+            else if (rCurrentProcessInfo[TANGENT_CONSTITUTIVE_TENSOR] == 2)
+            {
+                this->CalculateTangentTensor(tangent_tensor, r_strain_vector, r_integrated_stress_vector, this_constitutive_variables.D, cl_values);
+            }
+            else if (rCurrentProcessInfo[TANGENT_CONSTITUTIVE_TENSOR] == 3)
+            {
+                this->CalculateTangentTensorSecondOrder(tangent_tensor, r_strain_vector, r_integrated_stress_vector, this_constitutive_variables.D, cl_values);
+            }
+            this->CalculateAndAddKm(rLeftHandSideMatrix, this_kinematic_variables.B, tangent_tensor, int_to_reference_weight);
+        }
+        else
+        {
+            this->CalculateAndAddKm(rLeftHandSideMatrix, this_kinematic_variables.B, (1.0 - damage_element) * this_constitutive_variables.D, int_to_reference_weight);
+        }
         }
         if (CalculateResidualVectorFlag) { // Calculation of the matrix is required
             this->CalculateAndAddResidualVector(rRightHandSideVector, this_kinematic_variables, rCurrentProcessInfo, body_force, r_integrated_stress_vector, int_to_reference_weight);
@@ -754,7 +775,13 @@ void GenericSmallStrainFemDemElement<TDim,TyieldSurf>::CalculateOnIntegrationPoi
             if (rOutput[point_number].size() != strain_size )
                 rOutput[point_number].resize( strain_size, false);
 
-            rOutput[point_number] = this_constitutive_variables.StressVector;
+            // rOutput[point_number] = this_constitutive_variables.StressVector;
+    
+            auto& r_elem_neigb = this->GetValue(NEIGHBOUR_ELEMENTS);
+            KRATOS_ERROR_IF(r_elem_neigb.size() == 0) << " Neighbour Elements not calculated" << std::endl;
+            Vector average_strain = (this_constitutive_variables.StrainVector + r_elem_neigb[0].GetValue(STRAIN_VECTOR) + r_elem_neigb[1].GetValue(STRAIN_VECTOR) + r_elem_neigb[2].GetValue(STRAIN_VECTOR)) / 4.0;
+            const Vector& r_integrated_stress_vector = prod(this_constitutive_variables.D, this_constitutive_variables.StrainVector);
+            rOutput[point_number] = r_integrated_stress_vector;
         }
     } else if (rVariable == GREEN_LAGRANGE_STRAIN_VECTOR  || rVariable == ALMANSI_STRAIN_VECTOR) {
         // Create and initialize element variables:
