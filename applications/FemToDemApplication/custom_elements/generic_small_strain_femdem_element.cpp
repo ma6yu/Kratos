@@ -197,7 +197,7 @@ void GenericSmallStrainFemDemElement<TDim,TyieldSurf>::CalculateAll(
     } else {
         cl_options.Set(ConstitutiveLaw::COMPUTE_CONSTITUTIVE_TENSOR, false);
     }
-    cl_options.Set(ConstitutiveLaw::COMPUTE_CONSTITUTIVE_TENSOR, true)
+    cl_options.Set(ConstitutiveLaw::COMPUTE_CONSTITUTIVE_TENSOR, true);
 
     // If strain has to be computed inside of the constitutive law with PK2
     cl_values.SetStrainVector(this_constitutive_variables.StrainVector); //this is the input  parameter
@@ -249,27 +249,35 @@ void GenericSmallStrainFemDemElement<TDim,TyieldSurf>::CalculateAll(
         const double damage_element = this->CalculateElementalDamage(damages_edges);
 
         const Vector& r_strain_vector = this_constitutive_variables.StrainVector;
-        const Vector& r_stress_vector = this_constitutive_variables.StressVector;
+        Vector& r_stress_vector = this_constitutive_variables.StressVector;
         // const Vector& r_integrated_stress_vector = (1.0 - damage_element)*r_stress_vector;
 
 
 
 // to remove!!!! paper Cervera 
-    auto& r_elem_neigb = this->GetValue(NEIGHBOUR_ELEMENTS);
-    KRATOS_ERROR_IF(r_elem_neigb.size() == 0) << " Neighbour Elements not calculated" << std::endl;
-    Vector average_strain = (r_strain_vector + r_elem_neigb[0].GetValue(STRAIN_VECTOR) + r_elem_neigb[1].GetValue(STRAIN_VECTOR) + r_elem_neigb[2].GetValue(STRAIN_VECTOR)) / 4.0;
-    const Vector r_integrated_stress_vector = prod(this_constitutive_variables.D, average_strain);
+            auto& r_elem_neigb = this->GetValue(NEIGHBOUR_ELEMENTS);
+            KRATOS_ERROR_IF(r_elem_neigb.size() == 0) << " Neighbour Elements not calculated" << std::endl;
+            Vector average_strain = this_constitutive_variables.StrainVector;
+            int counter = 1;
+            for (int i = 0; i < r_elem_neigb.size();i++) {
+                if (this->Id() !=r_elem_neigb[i].Id()) {
+                    counter++;
+                    noalias(average_strain) += r_elem_neigb[i].GetValue(STRAIN_VECTOR);
+                }
+            }
+            average_strain /= counter;
+            const Vector r_integrated_stress_vector = prod(this_constitutive_variables.D, average_strain);
+            r_stress_vector = r_integrated_stress_vector;
 
-    KRATOS_WATCH(average_strain)
-    KRATOS_WATCH(r_integrated_stress_vector)
-    KRATOS_WATCH(r_stress_vector)
+    // KRATOS_WATCH(this_constitutive_variables.D)
+
 
 
 
     if (CalculateStiffnessMatrixFlag)
     { // Calculation of the matrix is required
         // Contributions to stiffness matrix calculated on the reference config
-        if (is_damaging == true && norm_2(r_strain_vector) > tolerance)
+        if (is_damaging == true && norm_2(average_strain) > tolerance)
         {
             Matrix tangent_tensor;
             if (rCurrentProcessInfo[TANGENT_CONSTITUTIVE_TENSOR] == 0)
@@ -759,7 +767,7 @@ void GenericSmallStrainFemDemElement<TDim,TyieldSurf>::CalculateOnIntegrationPoi
         Flags& cl_options=cl_values.GetOptions();
         cl_options.Set(ConstitutiveLaw::USE_ELEMENT_PROVIDED_STRAIN, true);
         cl_options.Set(ConstitutiveLaw::COMPUTE_STRESS, true);
-        cl_options.Set(ConstitutiveLaw::COMPUTE_CONSTITUTIVE_TENSOR, false);
+        cl_options.Set(ConstitutiveLaw::COMPUTE_CONSTITUTIVE_TENSOR, true);
 
         cl_values.SetStrainVector(this_constitutive_variables.StrainVector);
 
@@ -782,11 +790,23 @@ void GenericSmallStrainFemDemElement<TDim,TyieldSurf>::CalculateOnIntegrationPoi
 
             // rOutput[point_number] = this_constitutive_variables.StressVector;
     
+
+
             auto& r_elem_neigb = this->GetValue(NEIGHBOUR_ELEMENTS);
             KRATOS_ERROR_IF(r_elem_neigb.size() == 0) << " Neighbour Elements not calculated" << std::endl;
-            Vector average_strain = (this_constitutive_variables.StrainVector + r_elem_neigb[0].GetValue(STRAIN_VECTOR) + r_elem_neigb[1].GetValue(STRAIN_VECTOR) + r_elem_neigb[2].GetValue(STRAIN_VECTOR)) / 4.0;
-            const Vector& r_integrated_stress_vector = prod(this_constitutive_variables.D, average_strain);
+            Vector average_strain = this_constitutive_variables.StrainVector;
+            int counter = 1;
+            for (int i = 0; i < r_elem_neigb.size();i++) {
+                if (this->Id() !=r_elem_neigb[i].Id()) {
+                    counter++;
+                    noalias(average_strain) += r_elem_neigb[i].GetValue(STRAIN_VECTOR);
+                }
+            }
+            average_strain /= counter;
+            const Vector r_integrated_stress_vector = prod(this_constitutive_variables.D, average_strain);
             rOutput[point_number] = r_integrated_stress_vector;
+
+
         }
     } else if (rVariable == GREEN_LAGRANGE_STRAIN_VECTOR  || rVariable == ALMANSI_STRAIN_VECTOR) {
         // Create and initialize element variables:
