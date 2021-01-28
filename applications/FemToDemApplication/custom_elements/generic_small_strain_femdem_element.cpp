@@ -197,6 +197,7 @@ void GenericSmallStrainFemDemElement<TDim,TyieldSurf>::CalculateAll(
     } else {
         cl_options.Set(ConstitutiveLaw::COMPUTE_CONSTITUTIVE_TENSOR, false);
     }
+    cl_options.Set(ConstitutiveLaw::COMPUTE_CONSTITUTIVE_TENSOR, true)
 
     // If strain has to be computed inside of the constitutive law with PK2
     cl_values.SetStrainVector(this_constitutive_variables.StrainVector); //this is the input  parameter
@@ -257,7 +258,11 @@ void GenericSmallStrainFemDemElement<TDim,TyieldSurf>::CalculateAll(
     auto& r_elem_neigb = this->GetValue(NEIGHBOUR_ELEMENTS);
     KRATOS_ERROR_IF(r_elem_neigb.size() == 0) << " Neighbour Elements not calculated" << std::endl;
     Vector average_strain = (r_strain_vector + r_elem_neigb[0].GetValue(STRAIN_VECTOR) + r_elem_neigb[1].GetValue(STRAIN_VECTOR) + r_elem_neigb[2].GetValue(STRAIN_VECTOR)) / 4.0;
-    const Vector& r_integrated_stress_vector = prod(this_constitutive_variables.D, r_strain_vector);
+    const Vector r_integrated_stress_vector = prod(this_constitutive_variables.D, average_strain);
+
+    KRATOS_WATCH(average_strain)
+    KRATOS_WATCH(r_integrated_stress_vector)
+    KRATOS_WATCH(r_stress_vector)
 
 
 
@@ -780,7 +785,7 @@ void GenericSmallStrainFemDemElement<TDim,TyieldSurf>::CalculateOnIntegrationPoi
             auto& r_elem_neigb = this->GetValue(NEIGHBOUR_ELEMENTS);
             KRATOS_ERROR_IF(r_elem_neigb.size() == 0) << " Neighbour Elements not calculated" << std::endl;
             Vector average_strain = (this_constitutive_variables.StrainVector + r_elem_neigb[0].GetValue(STRAIN_VECTOR) + r_elem_neigb[1].GetValue(STRAIN_VECTOR) + r_elem_neigb[2].GetValue(STRAIN_VECTOR)) / 4.0;
-            const Vector& r_integrated_stress_vector = prod(this_constitutive_variables.D, this_constitutive_variables.StrainVector);
+            const Vector& r_integrated_stress_vector = prod(this_constitutive_variables.D, average_strain);
             rOutput[point_number] = r_integrated_stress_vector;
         }
     } else if (rVariable == GREEN_LAGRANGE_STRAIN_VECTOR  || rVariable == ALMANSI_STRAIN_VECTOR) {
