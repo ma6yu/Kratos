@@ -50,6 +50,20 @@ SmallStrainIsotropicDamage3D::~SmallStrainIsotropicDamage3D()
 //************************************************************************************
 //************************************************************************************
 
+bool SmallStrainIsotropicDamage3D::Has(const Variable<bool>& rThisVariable)
+{
+    if(rThisVariable == IS_INELASTIC){
+        // explicitly returning "false", so we know we must call CalculateValue(...)
+        return false;
+    }
+
+    return false;
+}
+
+
+//************************************************************************************
+//************************************************************************************
+
 bool SmallStrainIsotropicDamage3D::Has(const Variable<double>& rThisVariable)
 {
     if(rThisVariable == STRAIN_ENERGY){
@@ -311,13 +325,26 @@ double& SmallStrainIsotropicDamage3D::CalculateValue(
         rValue = 1. - stress_like_variable / mStrainVariable;
     }
 
+    return(rValue);
+}
+
+
+//************************************************************************************
+//************************************************************************************
+
+bool& SmallStrainIsotropicDamage3D::CalculateValue(
+    Parameters& rValues,
+    const Variable<bool>& rThisVariable,
+    bool& rValue
+    )
+{
     if (rThisVariable == IS_INELASTIC){
         const Properties& r_material_properties = rValues.GetMaterialProperties();
         const double stress_like_variable = EvaluateHardeningLaw(mStrainVariable, r_material_properties);
 
-        rValue = 0.0;
+        rValue = false;
         if(1. - stress_like_variable / mStrainVariable > 0.0){
-            rValue = 1.0;
+            rValue = true;
         }
     }
 

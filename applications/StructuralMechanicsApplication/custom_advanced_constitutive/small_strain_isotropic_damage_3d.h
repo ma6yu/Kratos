@@ -106,6 +106,7 @@ public:
      * @param rThisVariable the variable to be checked for
      * @return true if the variable is defined in the constitutive law
      */
+    bool Has(const Variable<bool>& rThisVariable) override;
     bool Has(const Variable<double>& rThisVariable) override;
 
     /**
@@ -189,6 +190,9 @@ public:
      * @param rValue a reference to the returned value
      * @return rValue output: the value of the specified variable
      */
+    bool& CalculateValue(Parameters& rValues,
+                           const Variable<bool>& rThisVariable,
+                           bool& rValue) override;
     double& CalculateValue(Parameters& rValues,
                            const Variable<double>& rThisVariable,
                            double& rValue) override;
