@@ -295,6 +295,26 @@ double& SmallStrainIsotropicDamage3D::CalculateValue(
         rValue = 1. - stress_like_variable / mStrainVariable;
     }
 
+
+//************************************************************************************
+//************************************************************************************
+
+Vector& SmallStrainIsotropicDamage3D::CalculateValue(
+    Parameters& rValues,
+    const Variable<Vector>& rThisVariable,
+    Vector& rValue
+    )
+{
+    if (rThisVariable == STRAIN ||
+        rThisVariable == GREEN_LAGRANGE_STRAIN_VECTOR ||
+        rThisVariable == ALMANSI_STRAIN_VECTOR) {
+
+        rValue = rValues.GetStrainVector();
+        if (rValues.GetProcessInfo().Has(INITIAL_STRAIN)) {
+            noalias(rValue) += rValues.GetProcessInfo()[INITIAL_STRAIN];
+        }
+    }
+
     return(rValue);
 }
 

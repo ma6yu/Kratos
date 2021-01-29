@@ -192,6 +192,9 @@ public:
     double& CalculateValue(Parameters& rValues,
                            const Variable<double>& rThisVariable,
                            double& rValue) override;
+    Vector& CalculateValue(Parameters& rValues,
+                           const Variable<Vector>& rThisVariable,
+                           Vector& rValue) override;
 
     /**
      * @brief This function provides the place to perform checks on the completeness of the input.
