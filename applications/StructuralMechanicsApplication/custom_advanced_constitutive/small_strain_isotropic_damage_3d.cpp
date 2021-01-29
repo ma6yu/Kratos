@@ -77,6 +77,18 @@ bool SmallStrainIsotropicDamage3D::Has(const Variable<Vector>& rThisVariable)
         return true;
     }
 
+    if(rThisVariable == STRAIN){
+        // explicitly returning "false", so we know we must call CalculateValue(...)
+        return false;
+    }
+    if(rThisVariable == GREEN_LAGRANGE_STRAIN_VECTOR){
+        // explicitly returning "false", so we know we must call CalculateValue(...)
+        return false;
+    }
+    if(rThisVariable == ALMANSI_STRAIN_VECTOR){
+        // explicitly returning "false", so we know we must call CalculateValue(...)
+        return false;
+    }
     return false;
 }
 
