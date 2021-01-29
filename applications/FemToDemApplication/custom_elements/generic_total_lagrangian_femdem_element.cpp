@@ -1908,23 +1908,40 @@ void GenericTotalLagrangianFemDemElement<TDim,TyieldSurf>::IntegratePerturbedStr
     bool dummy = false;
     Vector average_stress_edge(VoigtSize), average_strain_edge(VoigtSize);
 
-    for (unsigned int edge = 0; edge < NumberOfEdges; edge++) {
-        average_stress_edge = r_perturbed_predictive_stress;
-        average_strain_edge = rPerturbedStrainVector;
-        this->CalculateAverageVariableOnEdge(this, STRESS_VECTOR, average_stress_edge, edge);
-        this->CalculateAverageVariableOnEdge(this, STRAIN_VECTOR, average_strain_edge, edge);
+    // for (unsigned int edge = 0; edge < NumberOfEdges; edge++) {
+        // average_stress_edge = r_perturbed_predictive_stress;
+        // average_strain_edge = rPerturbedStrainVector;
+        // this->CalculateAverageVariableOnEdge(this, STRESS_VECTOR, average_stress_edge, edge);
+        // this->CalculateAverageVariableOnEdge(this, STRAIN_VECTOR, average_strain_edge, edge);
 
-        double damage_edge = mDamages[edge];
-        double threshold = mThresholds[edge];
+/////////////////////
+            auto& r_elem_neigb = this->GetValue(NEIGHBOUR_ELEMENTS);
+            KRATOS_ERROR_IF(r_elem_neigb.size() == 0) << " Neighbour Elements not calculated" << std::endl;
+            Vector average_strain = rPerturbedStrainVector;
+            int counter = 1;
+            for (int i = 0; i < r_elem_neigb.size();i++) {
+                if (this->Id() !=r_elem_neigb[i].Id()) {
+                    counter++;
+                    noalias(average_strain) += r_elem_neigb[i].GetValue(STRAIN_VECTOR);
+                }
+            }
+            average_strain /= counter;
+            rPerturbedStressVector = prod(rElasticMatrix, average_strain);
+            // is_damaging = true;
 
-        this->IntegrateStressDamageMechanics(threshold, damage_edge, average_strain_edge, 
-                                             average_stress_edge, edge, characteristic_length, 
-                                             rValues, dummy);
+            /////////////////
 
-        damages_edges[edge] = damage_edge;
-    } // Loop edges
-    const double damage_element = this->CalculateElementalDamage(damages_edges);
-    rPerturbedStressVector = (1.0 - damage_element) * r_perturbed_predictive_stress;
+            // double damage_edge = mDamages[edge];
+            // double threshold = mThresholds[edge];
+
+            // this->IntegrateStressDamageMechanics(threshold, damage_edge, average_strain_edge,
+            //                                      average_stress_edge, edge, characteristic_length,
+            //                                      rValues, dummy);
+
+            // damages_edges[edge] = damage_edge;
+    // } // Loop edges
+    // const double damage_element = this->CalculateElementalDamage(damages_edges);
+    // rPerturbedStressVector = (1.0 - damage_element) * r_perturbed_predictive_stress;
 }
 
 /***********************************************************************************/

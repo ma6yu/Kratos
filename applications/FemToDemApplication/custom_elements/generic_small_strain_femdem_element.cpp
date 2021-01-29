@@ -268,40 +268,38 @@ void GenericSmallStrainFemDemElement<TDim,TyieldSurf>::CalculateAll(
             average_strain /= counter;
             const Vector r_integrated_stress_vector = prod(this_constitutive_variables.D, average_strain);
             r_stress_vector = r_integrated_stress_vector;
+            is_damaging = true;
 
-    // KRATOS_WATCH(this_constitutive_variables.D)
+            // KRATOS_WATCH(this_constitutive_variables.D)
 
-
-
-
-    if (CalculateStiffnessMatrixFlag)
-    { // Calculation of the matrix is required
-        // Contributions to stiffness matrix calculated on the reference config
-        if (is_damaging == true && norm_2(average_strain) > tolerance)
-        {
-            Matrix tangent_tensor;
-            if (rCurrentProcessInfo[TANGENT_CONSTITUTIVE_TENSOR] == 0)
-            {
-                tangent_tensor = this_constitutive_variables.D;
-            }
-            else if (rCurrentProcessInfo[TANGENT_CONSTITUTIVE_TENSOR] == 1)
-            {
-                tangent_tensor = (1.0 - damage_element) * this_constitutive_variables.D;
-            }
-            else if (rCurrentProcessInfo[TANGENT_CONSTITUTIVE_TENSOR] == 2)
-            {
-                this->CalculateTangentTensor(tangent_tensor, r_strain_vector, r_integrated_stress_vector, this_constitutive_variables.D, cl_values);
-            }
-            else if (rCurrentProcessInfo[TANGENT_CONSTITUTIVE_TENSOR] == 3)
-            {
-                this->CalculateTangentTensorSecondOrder(tangent_tensor, r_strain_vector, r_integrated_stress_vector, this_constitutive_variables.D, cl_values);
-            }
-            this->CalculateAndAddKm(rLeftHandSideMatrix, this_kinematic_variables.B, tangent_tensor, int_to_reference_weight);
-        }
-        else
-        {
-            this->CalculateAndAddKm(rLeftHandSideMatrix, this_kinematic_variables.B, (1.0 - damage_element) * this_constitutive_variables.D, int_to_reference_weight);
-        }
+            if (CalculateStiffnessMatrixFlag)
+            { // Calculation of the matrix is required
+                // Contributions to stiffness matrix calculated on the reference config
+                if (is_damaging == true && norm_2(r_strain_vector) > tolerance)
+                {
+                    Matrix tangent_tensor;
+                //     if (rCurrentProcessInfo[TANGENT_CONSTITUTIVE_TENSOR] == 0)
+                //     {
+                //         tangent_tensor = this_constitutive_variables.D;
+                //     }
+                //     else if (rCurrentProcessInfo[TANGENT_CONSTITUTIVE_TENSOR] == 1)
+                //     {
+                //         tangent_tensor = (1.0 - damage_element) * this_constitutive_variables.D;
+                //     }
+                //     else if (rCurrentProcessInfo[TANGENT_CONSTITUTIVE_TENSOR] == 2)
+                //     {
+                        this->CalculateTangentTensor(tangent_tensor, r_strain_vector, r_integrated_stress_vector, this_constitutive_variables.D, cl_values);
+                    // }
+                    // else if (rCurrentProcessInfo[TANGENT_CONSTITUTIVE_TENSOR] == 3)
+                    // {
+                    //     this->CalculateTangentTensorSecondOrder(tangent_tensor, r_strain_vector, r_integrated_stress_vector, this_constitutive_variables.D, cl_values);
+                    // }
+                    this->CalculateAndAddKm(rLeftHandSideMatrix, this_kinematic_variables.B, tangent_tensor, int_to_reference_weight);
+                }
+                else
+                {
+                    this->CalculateAndAddKm(rLeftHandSideMatrix, this_kinematic_variables.B, (1.0 - damage_element) * this_constitutive_variables.D, int_to_reference_weight);
+                }
         }
         if (CalculateResidualVectorFlag) { // Calculation of the matrix is required
             this->CalculateAndAddResidualVector(rRightHandSideVector, this_kinematic_variables, rCurrentProcessInfo, body_force, r_integrated_stress_vector, int_to_reference_weight);
