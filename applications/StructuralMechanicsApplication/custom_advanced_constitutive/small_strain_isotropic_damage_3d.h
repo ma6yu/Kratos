@@ -190,9 +190,9 @@ public:
      * @param rValue a reference to the returned value
      * @return rValue output: the value of the specified variable
      */
-    bool& CalculateValue(Parameters& rValues,
-                           const Variable<bool>& rThisVariable,
-                           bool& rValue) override;
+//    bool& CalculateValue(Parameters& rValues,
+//                           const Variable<bool>& rThisVariable,
+//                           bool& rValue) override;
     double& CalculateValue(Parameters& rValues,
                            const Variable<double>& rThisVariable,
                            double& rValue) override;
