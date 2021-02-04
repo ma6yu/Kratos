@@ -280,6 +280,7 @@ public:
      * @param rValues The norm of the deviation stress
      * @param rInternalVariables
      */
+    using ConstitutiveLaw::CalculateStressResponse;
     void CalculateStressResponse(ConstitutiveLaw::Parameters& rValues,
 		    Vector& rInternalVariables) override;
 
