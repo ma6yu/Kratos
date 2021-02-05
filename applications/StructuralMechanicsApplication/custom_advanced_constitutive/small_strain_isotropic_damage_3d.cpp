@@ -199,7 +199,7 @@ void SmallStrainIsotropicDamage3D::CalculateStressResponse(
 
         // Auxiliary stress vector to allow derived models (e.g. traction-only damage) to set
         // a different value of r_stress_vector_pos with ComputePositiveStressVector function
-        // In the symmetric model, ComputePositiveStressVector does not do anything.
+        // In the symmetric model, ComputePositiveStressVector does nothing.
         Vector r_stress_vector_pos = r_stress_vector;
         ComputePositiveStressVector(r_stress_vector_pos, r_stress_vector);
 

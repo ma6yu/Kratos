@@ -309,10 +309,10 @@ protected:
      * @param rPlasticStrain
      * @param rAccumulatedPlasticStrain
      */
-    using ConstitutiveLaw::CalculateStressResponse;
-    virtual void CalculateStressResponse(ConstitutiveLaw::Parameters& rValues,
-                                 Vector& rPlasticStrain,
-                                 double& rAccumulatedPlasticStrain );
+    //using ConstitutiveLaw::CalculateStressResponse;
+    //virtual void CalculateStressResponse(ConstitutiveLaw::Parameters& rValues,
+    //                             Vector& rPlasticStrain,
+    //                             double& rAccumulatedPlasticStrain );
 
     /**
      * @brief This method computes the yield function
