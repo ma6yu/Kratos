@@ -256,7 +256,8 @@ private:
      * @param rElasticityTensor The elastic tensor/matrix to be computed
      * @param rMaterialProperties The properties of the material
      */
-    void CalculateElasticMatrix(const Properties &rMaterialProperties, Matrix &rElasticityTensor) ;
+    void CalculateElasticMatrix(Matrix &rConstitutiveMatrix, ConstitutiveLaw::Parameters &rValues) override;
+    //void CalculateElasticMatrix(const Properties &rMaterialProperties, Matrix &rElasticityTensor) ;
 
 
     friend class Serializer;

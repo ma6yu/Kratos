@@ -502,7 +502,7 @@ KRATOS_TEST_CASE_IN_SUITE(_ConstitutiveLaw_SmallStrainJ2Plasticity3D, KratosStru
         if (cl.RequiresFinalizeMaterialResponse()){
             cl.FinalizeMaterialResponseCauchy(cl_parameters);
         }
-        double value;
+//        double value;
 
 //          // Check damage variable
 //          cl.CalculateValue(cl_parameters, DAMAGE_VARIABLE, value);

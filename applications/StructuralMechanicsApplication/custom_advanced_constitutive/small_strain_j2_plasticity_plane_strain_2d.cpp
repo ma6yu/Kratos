@@ -145,7 +145,7 @@ void SmallStrainJ2PlasticityPlaneStrain2D::CalculateStressResponse(
 
         Matrix elastic_tensor;
         elastic_tensor.resize(4, 4, false);
-        CalculateElasticMatrix(r_material_properties, elastic_tensor);
+        CalculateElasticMatrix(elastic_tensor, rValues);
         Vector yield_tension(4);
         noalias(yield_tension) = prod(elastic_tensor, r_strain_vector - mPlasticStrain);
 
@@ -221,34 +221,37 @@ void SmallStrainJ2PlasticityPlaneStrain2D::CalculateStressResponse(
 //************************************************************************************
 //************************************************************************************
 
-void SmallStrainJ2PlasticityPlaneStrain2D::CalculateElasticMatrix(const Properties &rMaterialProperties, Matrix &rElasticityTensor)
+void SmallStrainJ2PlasticityPlaneStrain2D::CalculateElasticMatrix(
+        Matrix& rConstitutiveMatrix,
+        ConstitutiveLaw::Parameters& rValues)
 {
-    const double E = rMaterialProperties[YOUNG_MODULUS];
-    const double poisson_ratio = rMaterialProperties[POISSON_RATIO];
+    const Properties& r_material_properties = rValues.GetMaterialProperties();
+    const double E = r_material_properties[YOUNG_MODULUS];
+    const double NU = r_material_properties[POISSON_RATIO];
     const double lambda =
-        E * poisson_ratio / ((1. + poisson_ratio) * (1. - 2. * poisson_ratio));
-    const double mu = E / (2. + 2. * poisson_ratio);
+        E * NU / ((1. + NU) * (1. - 2. * NU));
+    const double mu = E / (2. + 2. * NU);
 
-    if (rElasticityTensor.size1() != 4 || rElasticityTensor.size2() != 4)
-        rElasticityTensor.resize(4, 4, false);
-    rElasticityTensor.clear();
+    if (rConstitutiveMatrix.size1() != 4 || rConstitutiveMatrix.size2() != 4)
+        rConstitutiveMatrix.resize(4, 4, false);
+    rConstitutiveMatrix.clear();
 
-    rElasticityTensor(0, 0) = lambda + 2. * mu;
-    rElasticityTensor(0, 1) = lambda;
-    rElasticityTensor(0, 2) = lambda;
-    rElasticityTensor(0, 3) = 0.;
-    rElasticityTensor(1, 0) = lambda;
-    rElasticityTensor(1, 1) = lambda + 2. * mu;
-    rElasticityTensor(1, 2) = lambda;
-    rElasticityTensor(1, 3) = 0.;
-    rElasticityTensor(2, 0) = lambda;
-    rElasticityTensor(2, 1) = lambda;
-    rElasticityTensor(2, 2) = lambda + 2. * mu;
-    rElasticityTensor(2, 3) = 0.;
-    rElasticityTensor(3, 0) = 0.;
-    rElasticityTensor(3, 1) = 0.;
-    rElasticityTensor(3, 2) = 0.;
-    rElasticityTensor(3, 3) = mu;
+    rConstitutiveMatrix(0, 0) = lambda + 2. * mu;
+    rConstitutiveMatrix(0, 1) = lambda;
+    rConstitutiveMatrix(0, 2) = lambda;
+    rConstitutiveMatrix(0, 3) = 0.;
+    rConstitutiveMatrix(1, 0) = lambda;
+    rConstitutiveMatrix(1, 1) = lambda + 2. * mu;
+    rConstitutiveMatrix(1, 2) = lambda;
+    rConstitutiveMatrix(1, 3) = 0.;
+    rConstitutiveMatrix(2, 0) = lambda;
+    rConstitutiveMatrix(2, 1) = lambda;
+    rConstitutiveMatrix(2, 2) = lambda + 2. * mu;
+    rConstitutiveMatrix(2, 3) = 0.;
+    rConstitutiveMatrix(3, 0) = 0.;
+    rConstitutiveMatrix(3, 1) = 0.;
+    rConstitutiveMatrix(3, 2) = 0.;
+    rConstitutiveMatrix(3, 3) = mu;
 }
 
 //************************************************************************************
