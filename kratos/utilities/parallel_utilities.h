@@ -110,9 +110,9 @@ template <
 class BlockPartitionTraits
 {
 public:
-    using container_type = typename std::decay<TContainerType>::type;
-    using iterator_type = typename std::remove_reference<TContainerType>::type::const_iterator;
-    using container_reference = const container_type&;
+    using ContainerType = typename std::decay<TContainerType>::type;
+    using ContainerReferenceType = const ContainerType&;
+    using IteratorType = typename std::remove_reference<TContainerType>::type::const_iterator;
 };
 
 
@@ -120,9 +120,9 @@ template <typename TContainerType>
 class BlockPartitionTraits<TContainerType, false>
 {
 public:
-    using container_type = typename std::decay<TContainerType>::type;
-    using iterator_type = typename std::remove_reference<TContainerType>::type::iterator;
-    using container_reference = container_type&;
+    using ContainerType = typename std::decay<TContainerType>::type;
+    using ContainerReferenceType = ContainerType&;
+    using IteratorType = typename std::remove_reference<TContainerType>::type::iterator;
 };
 
 
@@ -137,16 +137,16 @@ template<
 class BlockPartition : public BlockPartitionTraits<TContainerType>
 {
 public:
-    using typename BlockPartitionTraits<TContainerType>::iterator_type;
-    using typename BlockPartitionTraits<TContainerType>::container_reference;
+    using typename BlockPartitionTraits<TContainerType>::IteratorType;
+    using typename BlockPartitionTraits<TContainerType>::ContainerReferenceType;
 
 public:
     /** @param it_begin - iterator pointing at the beginning of the container
      *  @param it_end - iterator pointing to the end of the container
      *  @param Nchunks - number of threads to be used in the loop (must be lower than TMaxThreads)
      */
-    BlockPartition(iterator_type it_begin,
-                   iterator_type it_end,
+    BlockPartition(IteratorType it_begin,
+                   IteratorType it_end,
                    int Nchunks = ParallelUtilities::GetNumThreads())
     {
         KRATOS_ERROR_IF(Nchunks < 1) << "Number of chunks must be > 0 (and not " << Nchunks << ")" << std::endl;
@@ -170,7 +170,7 @@ public:
     /** @param rData - the continer to be iterated upon
      *  @param Nchunks - number of threads to be used in the loop (must be lower than TMaxThreads)
      */
-    BlockPartition(container_reference rData,
+    BlockPartition(ContainerReferenceType rData,
                    int Nchunks = ParallelUtilities::GetNumThreads())
         : BlockPartition(rData.begin(), rData.end(), Nchunks)
     {}
@@ -266,7 +266,7 @@ public:
 
 private:
     int mNchunks;
-    std::array<iterator_type, TMaxThreads> mBlockPartition;
+    std::array<IteratorType, TMaxThreads> mBlockPartition;
 };
 
 /** @brief simplified version of the basic loop (without reduction) to enable template type deduction
