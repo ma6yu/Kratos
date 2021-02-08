@@ -103,25 +103,50 @@ private:
 //***********************************************************************************
 //***********************************************************************************
 //***********************************************************************************
+template <
+    typename TContainerType,
+    bool = std::is_const<typename std::remove_reference<TContainerType>::type>::value
+    >
+class BlockPartitionTraits
+{
+public:
+    using container_type = typename std::decay<TContainerType>::type;
+    using iterator_type = typename std::remove_reference<TContainerType>::type::const_iterator;
+    using container_reference = const container_type&;
+};
+
+
+template <typename TContainerType>
+class BlockPartitionTraits<TContainerType, false>
+{
+public:
+    using container_type = typename std::decay<TContainerType>::type;
+    using iterator_type = typename std::remove_reference<TContainerType>::type::iterator;
+    using container_reference = container_type&;
+};
+
+
 /** @param TContainerType - the type of the container used in the loop (must provide random access iterators)
- *  @param TIteratorType - type of iterator (by default as provided by the TContainerType)
  *  @param TMaxThreads - maximum number of threads allowed in the partitioning.
  *                       must be known at compile time to avoid heap allocations in the partitioning
  */
 template<
         class TContainerType,
-        class TIteratorType=typename TContainerType::iterator,
         int TMaxThreads=Globals::MaxAllowedThreads
         >
-class BlockPartition
+class BlockPartition : public BlockPartitionTraits<TContainerType>
 {
+public:
+    using typename BlockPartitionTraits<TContainerType>::iterator_type;
+    using typename BlockPartitionTraits<TContainerType>::container_reference;
+
 public:
     /** @param it_begin - iterator pointing at the beginning of the container
      *  @param it_end - iterator pointing to the end of the container
      *  @param Nchunks - number of threads to be used in the loop (must be lower than TMaxThreads)
      */
-    BlockPartition(TIteratorType it_begin,
-                   TIteratorType it_end,
+    BlockPartition(iterator_type it_begin,
+                   iterator_type it_end,
                    int Nchunks = ParallelUtilities::GetNumThreads())
     {
         KRATOS_ERROR_IF(Nchunks < 1) << "Number of chunks must be > 0 (and not " << Nchunks << ")" << std::endl;
@@ -145,7 +170,7 @@ public:
     /** @param rData - the continer to be iterated upon
      *  @param Nchunks - number of threads to be used in the loop (must be lower than TMaxThreads)
      */
-    BlockPartition(TContainerType& rData,
+    BlockPartition(container_reference rData,
                    int Nchunks = ParallelUtilities::GetNumThreads())
         : BlockPartition(rData.begin(), rData.end(), Nchunks)
     {}
@@ -241,7 +266,7 @@ public:
 
 private:
     int mNchunks;
-    std::array<TIteratorType, TMaxThreads> mBlockPartition;
+    std::array<iterator_type, TMaxThreads> mBlockPartition;
 };
 
 /** @brief simplified version of the basic loop (without reduction) to enable template type deduction
@@ -251,7 +276,7 @@ private:
 template <class TContainerType, class TFunctionType>
 void block_for_each(TContainerType &&v, TFunctionType &&func)
 {
-    BlockPartition<typename std::decay<TContainerType>::type>(std::forward<TContainerType>(v)).for_each(std::forward<TFunctionType>(func));
+    BlockPartition<TContainerType>(std::forward<TContainerType>(v)).for_each(std::forward<TFunctionType>(func));
 }
 
 /** @brief simplified version of the basic loop with reduction to enable template type deduction
@@ -261,7 +286,7 @@ void block_for_each(TContainerType &&v, TFunctionType &&func)
 template <class TReducer, class TContainerType, class TFunctionType>
 typename TReducer::value_type block_for_each(TContainerType &&v, TFunctionType &&func)
 {
-    return BlockPartition<typename std::decay<TContainerType>::type>
+    return BlockPartition<TContainerType>
         (std::forward<TContainerType>(v)).template for_each<TReducer>(std::forward<TFunctionType>(func));
 }
 
@@ -273,7 +298,7 @@ typename TReducer::value_type block_for_each(TContainerType &&v, TFunctionType &
 template <class TContainerType, class TThreadLocalStorage, class TFunctionType>
 void block_for_each(TContainerType &&v, const TThreadLocalStorage& tls, TFunctionType &&func)
 {
-    BlockPartition<typename std::decay<TContainerType>::type>(std::forward<TContainerType>(v)).for_each(tls, std::forward<TFunctionType>(func));
+    BlockPartition<TContainerType>(std::forward<TContainerType>(v)).for_each(tls, std::forward<TFunctionType>(func));
 }
 
 /** @brief simplified version of the basic loop with reduction and thread local storage (TLS) to enable template type deduction
@@ -284,7 +309,7 @@ void block_for_each(TContainerType &&v, const TThreadLocalStorage& tls, TFunctio
 template <class TReducer, class TContainerType, class TThreadLocalStorage, class TFunctionType>
 typename TReducer::value_type block_for_each(TContainerType &&v, const TThreadLocalStorage& tls, TFunctionType &&func)
 {
-    return BlockPartition<typename std::decay<TContainerType>::type>
+    return BlockPartition<TContainerType>
         (std::forward<TContainerType>(v)).template for_each<TReducer>(tls, std::forward<TFunctionType>(func));
 }
 
